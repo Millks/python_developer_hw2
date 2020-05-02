@@ -1,23 +1,21 @@
 import datetime
 import time
-
-
+import homework.decs as decs
 
 
 class Name_discr(object):
     def __set_name__(self, owner, name):
         self.name = name
 
+    @decs.my_logging_decorator
     def __set__(self, instance, value):
         if not isinstance(value, str):
-            instance.logger_err.error("TypeError: 'Неверный тип имени'")
             raise TypeError('Неверный тип имени')
         value = value.strip()
         for i in value:
             if value.isalpha():
                 instance.__dict__[self.name] = value
             else:
-                instance.logger_err.error("ValueError: 'Неверное имя'")
                 raise ValueError("ValueError: 'Неверное имя'")
 
     def __get__(self, instance, owner):
@@ -27,11 +25,11 @@ class Date_discr(object):
     def __set_name__(self, owner, name):
         self.name = name
 
+    @decs.my_logging_decorator
     def __set__(self, instance, value):
         month_dict = {'Января': '01', 'Февраля': '02', 'Марта': '03', 'Апреля': '04', 'Мая': '05', 'Июня': '06',
                       'Июля': '07', 'Августа': '08', 'Сентября': '09', 'Октября': '10', 'Ноября': '11', 'Декабря': '12'}
         if not isinstance(value, str):
-            instance.logger_err.error("TypeError: 'Неверный тип данных'")
             raise TypeError('Неверный тип данных')
         value = value.strip()
         for symbol in value:
@@ -54,7 +52,6 @@ class Date_discr(object):
                     if birth_lst[i][0:2] == "19" or "20":
                         f = False
                     else:
-                        instance.logger_err.error("AttributeError: 'Неверный формат года'")
                         raise AttributeError('Неверный формат года')
 
             if f:
@@ -65,14 +62,12 @@ class Date_discr(object):
             value = "-".join(birth_lst)
             try:
 
-                if self.name in instance.__dict__ and getattr(instance, self.name):
-                    instance.logger_inf.info("Дата рождения изменена")
+                #if self.name in instance.__dict__ and getattr(instance, self.name):
+                 #   instance.logger_inf.info("Дата рождения изменена")
                 instance.__dict__[self.name] = time.strftime("%Y-%m-%d", time.strptime(str(value), "%Y-%m-%d"))
             except ValueError:
-                instance.logger_err.error("ValueError: 'Неверный формат даты'")
                 raise ValueError('Неверный формат даты')
         else:
-            instance.logger_err.error("ValueError: 'Неверный формат даты'")
             raise ValueError(f'Неверный формат даты {birth_lst}')
 
     def __get__(self, instance, owner):
@@ -83,9 +78,9 @@ class Phone_discr(object):
     def __set_name__(self, owner, name):
         self.name = name
 
+    @decs.my_logging_decorator
     def __set__(self, instance, value):
         if not isinstance(value, str):
-            instance.logger_err.error("TypeError: 'Неверный тип данных'")
             raise TypeError('Неверный тип данных')
         value = value.strip()
         new_value = ""
@@ -93,12 +88,11 @@ class Phone_discr(object):
             if i.isdigit():
                 new_value += i
         if len(new_value) != 11:
-            instance.logger_err.error("ValueError: 'Неверный формат номера телефона'")
             raise ValueError('Неверный формат номера телефона')
         else:
             new_value = "7" + new_value[1:]
-            if self.name in instance.__dict__ and getattr(instance, self.name):
-                instance.logger_inf.info("Телефон изменен")
+            #if self.name in instance.__dict__ and getattr(instance, self.name):
+            #    instance.logger_inf.info("Телефон изменен")
             instance.__dict__[self.name] = new_value
 
     def __get__(self, instance, owner):
@@ -109,20 +103,19 @@ class Doc_type_discr(object):
     def __set_name__(self, owner, name):
         self.name = name
 
+    @decs.my_logging_decorator
     def __set__(self, instance, value):
         white_lst = ['Паспорт', 'Заграничный паспорт', 'Водительские права']
         if not isinstance(value, str):
-            instance.logger_err.error("TypeError: 'Неверный тип данных'")
             raise TypeError('Неверный тип данных')
         value = str(value)
         value = value.strip()
         if value.capitalize() in white_lst:
             value = value.capitalize()
-            if self.name in instance.__dict__ and getattr(instance, self.name):
-                instance.logger_inf.info("Тип документа изменен")
+            #if self.name in instance.__dict__ and getattr(instance, self.name):
+            #    instance.logger_inf.info("Тип документа изменен")
             instance.__dict__[self.name] = value
         else:
-            instance.logger_err.error("ValueError: 'Неверный формат документа'")
             raise ValueError('Неверный формат документа')
 
     def __get__(self, instance, owner):
@@ -133,9 +126,9 @@ class Doc_id_discr(object):
     def __set_name__(self, owner, name):
         self.name = name
 
+    @decs.my_logging_decorator
     def __set__(self, instance, value):
         if not isinstance(value, str):
-            instance.logger_err.error("TypeError: 'Неверный тип данных'")
             raise TypeError('Неверный тип данных')
         value = str(value)
         value = value.strip()
@@ -147,15 +140,13 @@ class Doc_id_discr(object):
                 value = value.replace(symbol, '')
         for i in value:
             if not i.isdigit():
-                instance.logger_err.error("ValueError: 'Неверный формат номера документа'")
                 raise ValueError(f'Неверный формат номера документа {value}')
 
         if len(value) == doc_dict[getattr(instance, 'document_type')]:
-            if self.name in instance.__dict__ and getattr(instance, self.name):
-                instance.logger_inf.info("Тип документа изменен")
+            #if self.name in instance.__dict__ and getattr(instance, self.name):
+            #    instance.logger_inf.info("Тип документа изменен")
             instance.__dict__[self.name] = value
         else:
-            instance.logger_err.error("ValueError: 'Неверный формат номера документа'")
             raise ValueError(f'Неверный формат номера документа {value}')
 
     def __get__(self, instance, owner):
@@ -165,9 +156,9 @@ class Not_renamalbe(Name_discr):
     def __set_name__(self, owner, name):
         self.name = name
 
+    @decs.my_logging_decorator
     def __set__(self, instance, value):
         if self.name in instance.__dict__ and getattr(instance, self.name):
-            instance.logger_err.error("AttributeError: 'Переназначение не предусмотрено'")
             raise AttributeError('Переназначение не предусмотрено')
         else:
             super().__set__(instance, value)

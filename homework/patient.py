@@ -1,7 +1,10 @@
 
 import logging
 import csv
+import sqlite3
 import homework.validators as validators
+import homework.decs as decs
+
 logger = logging.getLogger("inf")
 logger.setLevel(logging.INFO)
 handler = logging.FileHandler('inf.log', 'w', 'utf-8')
@@ -27,6 +30,7 @@ class Patient:
     document_type = validators.Doc_type_discr()
     document_id = validators.Doc_id_discr()
 
+    @decs.my_logging_decorator
     def __init__(self, *args):
         self.logger_inf = logging.getLogger("inf")
         self.logger_err = logging.getLogger("err")
@@ -37,12 +41,13 @@ class Patient:
         self.document_type = args[4]
         self.document_id = args[5]
 
-        self.logger_inf.info('Был создан новый пациент')
+
 
     @staticmethod
     def create(fname, lname, bdate, number, doc_type, doc_id):
         return Patient(fname, lname, bdate, number, doc_type, doc_id)
 
+    @decs.my_logging_decorator
     def save(self):
 
         myData = [str(self).split(",")]
@@ -51,7 +56,7 @@ class Patient:
         with myFile:
             writer = csv.writer(myFile)
             writer.writerows(myData)
-            self.logger_inf.info('Запись о новом пациенте сохранена')
+
 
     def __str__(self):
         return f"{self.first_name}, {self.last_name}, {self.birth_date}, {self.phone}, {self.document_type}, {self.document_id}"
