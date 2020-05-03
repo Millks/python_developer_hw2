@@ -1,9 +1,9 @@
 
 import logging
-import csv
+import click
 import sqlite3
-import homework.validators as validators
-import homework.decs as decs
+import validators as validators
+import decs as decs
 
 logger = logging.getLogger("inf")
 logger.setLevel(logging.INFO)
@@ -18,8 +18,14 @@ handler2 = logging.FileHandler('err.log', 'w', 'utf-8')
 handler2.setFormatter(formatter)
 err.addHandler(handler2)
 
-path = "data.csv"
+conn = sqlite3.connect('covid19.db')
+cursor = conn.cursor()
+#path = "data.csv"
 
+cursor.execute("""CREATE TABLE IF NOT EXISTS covid19
+                  (first_name text, last_name text, birth_date text,
+                   phone text, document_type text, document_id text)
+               """)
 
 
 class Patient:
@@ -41,21 +47,16 @@ class Patient:
         self.document_type = args[4]
         self.document_id = args[5]
 
-
-
     @staticmethod
     def create(fname, lname, bdate, number, doc_type, doc_id):
         return Patient(fname, lname, bdate, number, doc_type, doc_id)
 
     @decs.my_logging_decorator
     def save(self):
+        my_data = [self.first_name, self.last_name, self.birth_date, self.phone, self.document_type, self.document_id]
+        cursor.execute("INSERT INTO covid19 VALUES (?,?,?,?,?,?)", my_data)
+        conn.commit()
 
-        myData = [str(self).split(",")]
-
-        myFile = open(path, 'a', newline="")
-        with myFile:
-            writer = csv.writer(myFile)
-            writer.writerows(myData)
 
 
     def __str__(self):
@@ -64,9 +65,10 @@ class Patient:
 
 class PatientCollection(object):
     def __init__(self, path):
-        self.path = path
-        self.cursor = 0
-        self.count = -1
+        self.conn = sqlite3.connect(path)
+        self.cursor = conn.cursor()
+        self.id = 1
+        self.count = None
 
     def __iter__(self):
         return self
@@ -76,12 +78,17 @@ class PatientCollection(object):
         return self.__iter__()
 
     def __next__(self):
-        with open(self.path,'r') as File:
-            File.seek(self.cursor)
-            data = File.readline()
-            self.cursor = File.tell()
+        if self.count:
+            if self.id == self.count + 1:
+                self.cursor.close()
+                self.conn.close()
+                raise StopIteration
+        data = list(*self.cursor.execute(f"SELECT * FROM covid19 WHERE ROWID = {self.id}"))
 
-        if not data or not self.count:
+        if not data:
+            self.cursor.close()
+            self.conn.close()
             raise StopIteration
-        self.count -= 1
-        return Patient(*data.split(','))
+        self.id += 1
+        return Patient(*data)
+

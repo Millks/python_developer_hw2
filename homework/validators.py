@@ -1,6 +1,6 @@
 import datetime
 import time
-import homework.decs as decs
+import decs as decs
 
 
 class Name_discr(object):
